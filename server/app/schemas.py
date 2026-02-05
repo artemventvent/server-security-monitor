@@ -1,24 +1,27 @@
-from pydantic import BaseModel, Field
-from typing import List, Literal
-from datetime import datetime
+from pydantic import BaseModel
+from typing import List, Optional
 
+class AgentInfo(BaseModel):
+    id: str
+    hostname: str
+    ip: str
+    os: str
+    os_version: str
 
-Severity = Literal["low", "medium", "high"]
-Status = Literal["pass", "fail"]
+class PolicyInfo(BaseModel):
+    name: str
+    version: str
 
-
-class Finding(BaseModel):
-    source: str = Field(..., example="lynis")
-    check_id: str = Field(..., example="SSH_ROOT_LOGIN")
-    severity: Severity
-    status: Status
-    description: str
-    remediation: str
-
+class CheckResult(BaseModel):
+    check_id: str
+    title: str
+    status: str
+    severity: str
+    evidence: Optional[str]
+    recommendation: Optional[str] = None
 
 class AgentReport(BaseModel):
-    agent_id: str
-    hostname: str
-    os: str
-    timestamp: datetime
-    findings: List[Finding]
+    agent: AgentInfo
+    policy: PolicyInfo
+    timestamp: str
+    results: List[CheckResult]
