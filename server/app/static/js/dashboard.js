@@ -1,4 +1,4 @@
-/* global bootstrap, Chart */
+/* global bootstrap */
 
 const API_BASE = "/api/analytics";
 
@@ -56,97 +56,7 @@ function updateSummaryCards(dashboard) {
   levelLabelEl.className = `badge rounded-pill ${badgeClass}`;
 }
 
-function renderTopRisksChart(topRisks) {
-  const canvas = document.getElementById("topRisksChart");
-  const emptyLabel = document.getElementById("top-risks-empty");
-  if (!canvas) return;
-
-  if (!Array.isArray(topRisks) || topRisks.length === 0) {
-    emptyLabel.style.display = "block";
-    return;
-  }
-
-  const labels = topRisks.map((r) => r.check_id);
-  const counts = topRisks.map((r) => r.count);
-
-  // eslint-disable-next-line no-new
-  new Chart(canvas.getContext("2d"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Failed checks",
-          data: counts,
-          backgroundColor: "rgba(77, 163, 255, 0.6)",
-          borderRadius: 8
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#8aa0c8" },
-          grid: { display: false }
-        },
-        y: {
-          ticks: { color: "#8aa0c8", precision: 0 },
-          grid: { color: "rgba(255,255,255,0.05)" }
-        }
-      }
-    }
-  });
-}
-
-function renderStatusPieChart(dashboard) {
-  const canvas = document.getElementById("statusPieChart");
-  const emptyLabel = document.getElementById("status-pie-empty");
-  if (!canvas || !dashboard) return;
-
-  const total = dashboard.checks_total ?? 0;
-  const fails = dashboard.fails ?? 0;
-  const errors = dashboard.errors ?? 0;
-  const passes = Math.max(total - fails - errors, 0);
-
-  if (total === 0) {
-    emptyLabel.style.display = "block";
-    return;
-  }
-
-  const data = [passes, fails, errors];
-  const labels = ["Pass", "Fail", "Error"];
-
-  // eslint-disable-next-line no-new
-  new Chart(canvas.getContext("2d"), {
-    type: "doughnut",
-    data: {
-      labels,
-      datasets: [
-        {
-          data,
-          backgroundColor: [
-            "rgba(13, 202, 240, 0.8)",
-            "rgba(220, 53, 69, 0.85)",
-            "rgba(255, 193, 7, 0.9)"
-          ],
-          borderWidth: 0
-        }
-      ]
-    },
-    options: {
-      plugins: {
-        legend: {
-          labels: { color: "#8aa0c8" }
-        }
-      },
-      cutout: "70%"
-    }
-  });
-}
+// Charts removed per UI preference (flat dark theme).
 
 function formatDateTime(iso) {
   if (!iso) return "";
@@ -237,16 +147,13 @@ function renderHosts(hosts) {
 
 async function initDashboard() {
   try {
-    const [dashboard, topRisks, latestChecks, hosts] = await Promise.all([
+    const [dashboard, latestChecks, hosts] = await Promise.all([
       fetchJson(`${API_BASE}/dashboard`),
-      fetchJson(`${API_BASE}/top-risks`),
       fetchJson(`${API_BASE}/latest-checks`),
       fetchJson(`${API_BASE}/hosts`)
     ]);
 
     updateSummaryCards(dashboard);
-    renderTopRisksChart(topRisks);
-    renderStatusPieChart(dashboard);
     renderLatestChecks(latestChecks);
     renderHosts(hosts);
   } catch (e) {
